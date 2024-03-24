@@ -1,55 +1,42 @@
 const inputBox = document.getElementById("todo-input");
 const listContainer = document.getElementById("list-container");
 
-function saveTasks(tasks) {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+function saveTask() {
+    localStorage.setItem("task", listContainer.innerHTML);
 }
 
-function loadTasks() {
-    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-    tasks.forEach(task => {
-        const li = createTaskElement(task);
-        listContainer.appendChild(li);
-    });
+function showTask() {
+    listContainer.innerHTML = localStorage.getItem("task")
 }
-
-function createTaskElement(taskContent) {
-    const li = document.createElement("li");
-    li.textContent = taskContent;
-    const deleteButton = document.createElement("span");
-    deleteButton.textContent = "\u00d7";
-    li.appendChild(deleteButton);
-    return li;
-}
+showTask()
 
 function addItem() {
-    const taskContent = inputBox.value.trim();
-    if (taskContent === '') {
-        alert("Please add a task.");
-        return;
+    if(inputBox.value === ''){
+        alert("Please add an Item / Task");
     }
-    const li = createTaskElement(taskContent);
-    listContainer.appendChild(li);
+    else {
+        let li = document.createElement("li");
+        li.innerHTML = inputBox.value;
+        listContainer.appendChild(li);
+        let span = document.createElement("span");
+        span.innerHTML = "\u00d7"
+        li.appendChild(span)
+        alert(`Added: ${inputBox.value}`);
+    }
     inputBox.value = '';
-    saveTasks(getTasks());
-    alert(`Added: ${taskContent}`);
+    saveTask();
 }
 
-function getTasks() {
-    return Array.from(listContainer.querySelectorAll("li")).map(li => li.textContent);
-}
 
-function handleListClick(e) {
-    const target = e.target;
-    if (target.tagName === "LI") {
-        target.classList.toggle("checked");
-    } else if (target.tagName === "SPAN") {
+listContainer.addEventListener("click", function(e){
+    if(e.target.tagName === "LI"){
+        e.target.classList.toggle("checked");
+        saveTask();
+    }
+    else if(e.target.tagName === "SPAN"){
         if (confirm("Are you sure you want to delete this task?")) {
-            target.parentElement.remove();
+            e.target.parentElement.remove();
+            saveTask();
         }
     }
-    saveTasks(getTasks());
-}
-
-loadTasks();
-listContainer.addEventListener("click", handleListClick);
+}, false);
