@@ -1,47 +1,55 @@
 const inputBox = document.getElementById("todo-input");
 const listContainer = document.getElementById("list-container");
 
-function saveTask() {
-    localStorage.setItem("task", listContainer.innerHTML);
+function saveTasks(tasks) {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-function showTask() {
-    listContainer.innerHTML = localStorage.getItem("task")
+function loadTasks() {
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.forEach(task => {
+        const li = createTaskElement(task);
+        listContainer.appendChild(li);
+    });
 }
-showTask()
+
+function createTaskElement(taskContent) {
+    const li = document.createElement("li");
+    li.textContent = taskContent;
+    const deleteButton = document.createElement("span");
+    deleteButton.textContent = "\u00d7";
+    li.appendChild(deleteButton);
+    return li;
+}
 
 function addItem() {
-    if(inputBox.value === ''){
-        alert("Please add an Item / Task");
+    const taskContent = inputBox.value.trim();
+    if (taskContent === '') {
+        alert("Please add a task.");
+        return;
     }
-    else {
-        let li = document.createElement("li");
-        li.innerHTML = inputBox.value;
-        listContainer.appendChild(li);
-        let span = document.createElement("span");
-        span.innerHTML = "\u00d7"
-        li.appendChild(span)
-        alert(`Added: ${inputBox.value}`);
-    }
+    const li = createTaskElement(taskContent);
+    listContainer.appendChild(li);
     inputBox.value = '';
-    saveTask();
+    saveTasks(getTasks());
+    alert(`Added: ${taskContent}`);
 }
 
+function getTasks() {
+    return Array.from(listContainer.querySelectorAll("li")).map(li => li.textContent);
+}
 
-listContainer.addEventListener("click", function(e){
-    if(e.target.tagName === "LI"){
-        e.target.classList.toggle("checked");
-        saveTask();
-    }
-    else if(e.target.tagName === "SPAN"){
+function handleListClick(e) {
+    const target = e.target;
+    if (target.tagName === "LI") {
+        target.classList.toggle("checked");
+    } else if (target.tagName === "SPAN") {
         if (confirm("Are you sure you want to delete this task?")) {
-            e.target.parentElement.remove();
-            saveTask();
+            target.parentElement.remove();
         }
     }
-}, false);
+    saveTasks(getTasks());
+}
 
-
-
-
-
+loadTasks();
+listContainer.addEventListener("click", handleListClick);
